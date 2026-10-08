@@ -1,7 +1,7 @@
 ---
 name: youtube-video-editor
 description: Edit raw footage into upload-ready YouTube videos and Shorts with ffmpeg - cut silences/dead air (jump cuts), trim, join intro/outro/b-roll clips, add ducked background music, transcribe and burn captions, normalize loudness to YouTube's -14 LUFS, reframe horizontal video to 9:16 Shorts, export with YouTube's recommended encoding, generate thumbnails, and write/validate chapters. Use this skill whenever the user wants to edit, cut, clean up, caption, subtitle, export, compress, reformat or "make ready for YouTube" any video file, turn a long video into Shorts/Reels/TikToks, make a thumbnail from a video, or create YouTube chapters/timestamps - even if they don't say "YouTube" or "ffmpeg" explicitly.
-compatibility: Requires ffmpeg + ffprobe (with libx264, libass, libfreetype) and Python 3.8+. Captioning additionally needs faster-whisper (recommended: `python3 -m venv ~/.venvs/whisper && ~/.venvs/whisper/bin/pip install faster-whisper`; transcribe.py finds that venv automatically) and a one-time model download from huggingface.co.
+compatibility: Requires ffmpeg + ffprobe (with libx264, libass, libfreetype) and Python 3.8+. Captioning additionally needs faster-whisper, best installed in a venv at ~/.venvs/whisper, which transcribe.py finds automatically, and a one-time model download from huggingface.co.
 ---
 
 # YouTube Video Editor
