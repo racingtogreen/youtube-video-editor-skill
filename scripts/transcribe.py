@@ -5,7 +5,10 @@ Usage:
   transcribe.py INPUT [--out captions.srt] [--model small] [--language en]
                 [--max-chars 42] [--max-lines 2] [--style long|shorts]
 
-Requires `faster-whisper` (pip install faster-whisper). Model sizes: tiny, base, small
+Requires `faster-whisper`. Recommended install (works with Homebrew/system Python):
+  python3 -m venv ~/.venvs/whisper && ~/.venvs/whisper/bin/pip install faster-whisper
+The script automatically re-runs itself with ~/.venvs/whisper (or $WHISPER_PYTHON) when
+the current Python lacks faster-whisper. Model sizes: tiny, base, small
 (default, good on CPU), medium, large-v3 (best, slow on CPU).
 
 Captions are rebuilt from word timestamps so they're readable:
@@ -22,12 +25,35 @@ import sys
 
 from _common import fmt_ts, require, run
 
+INSTALL_HELP = ("error: faster-whisper is not installed. Install it in its own environment:\n"
+                "  python3 -m venv ~/.venvs/whisper\n"
+                "  ~/.venvs/whisper/bin/pip install faster-whisper\n"
+                "This script finds ~/.venvs/whisper automatically (or set WHISPER_PYTHON to a python "
+                "that has faster-whisper).")
+
+
+def ensure_whisper():
+    """Re-run this script under a Python that has faster-whisper, if the current one doesn't."""
+    try:
+        import faster_whisper  # noqa: F401
+        return
+    except ImportError:
+        pass
+    if not os.environ.get("_YT_WHISPER_REEXEC"):
+        for py in (os.environ.get("WHISPER_PYTHON"),
+                   os.path.expanduser("~/.venvs/whisper/bin/python"),
+                   os.path.expanduser("~/.venvs/whisper/Scripts/python.exe")):
+            if py and os.path.exists(py):
+                os.environ["_YT_WHISPER_REEXEC"] = "1"
+                os.execv(py, [py, os.path.abspath(__file__), *sys.argv[1:]])
+    sys.exit(INSTALL_HELP)
+
 
 def load_words(path, model_name, language):
     try:
         from faster_whisper import WhisperModel
     except ImportError:
-        sys.exit("error: faster-whisper is not installed. Run: pip install faster-whisper")
+        sys.exit(INSTALL_HELP)
     try:
         model = WhisperModel(model_name, device="auto", compute_type="auto")
     except Exception as e:  # usually: model download blocked / offline
@@ -95,6 +121,7 @@ def main():
     ap.add_argument("--max-lines", type=int)
     args = ap.parse_args()
     require("ffmpeg")
+    ensure_whisper()
 
     out = args.out or os.path.splitext(args.input)[0] + ".srt"
     if args.style == "shorts":
